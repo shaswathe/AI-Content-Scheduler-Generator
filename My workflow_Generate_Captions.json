@@ -1,0 +1,473 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1GYyRdLQnVt9odBRqz50mG5XMEVb9fyoB7InKQF-VbTs",
+          "mode": "list",
+          "cachedResultName": "Content Calendar",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GYyRdLQnVt9odBRqz50mG5XMEVb9fyoB7InKQF-VbTs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GYyRdLQnVt9odBRqz50mG5XMEVb9fyoB7InKQF-VbTs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "632cf5e2-d524-45a1-a8ba-659fe3af1742",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleApi": {
+          "id": "1tI1Psn1U1KSAjUI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a social media content creator.\n\nTopic: {{ $json.Topic }}\n\nPlatform: {{ $json.Platform }}\n\nInstructions:\n\nIf Platform is Instagram:\n- Create a short engaging caption\n- Add emojis\n- Add 8 hashtags\n\nIf Platform is LinkedIn:\n- Create a professional post\n- Include insights\n- Add 3 hashtags\n\nIf Platform is Twitter/X:\n- Keep under 280 characters\n- Include trending hashtags\n\nGenerate only the final post.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        832,
+        0
+      ],
+      "id": "74c042c2-a053-4454-bd4f-8c797685dec0",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        704,
+        224
+      ],
+      "id": "229c5d11-4694-4a32-8d30-53009bcc5775",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "9yAujhTw1OtHf1Ah",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1GYyRdLQnVt9odBRqz50mG5XMEVb9fyoB7InKQF-VbTs",
+          "mode": "list",
+          "cachedResultName": "Content Calendar",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GYyRdLQnVt9odBRqz50mG5XMEVb9fyoB7InKQF-VbTs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GYyRdLQnVt9odBRqz50mG5XMEVb9fyoB7InKQF-VbTs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Generated",
+            "Generated_Post": "={{ $('Basic LLM Chain').item.json.text }}",
+            "row_number": "={{ $('Limit').item.json.row_number }}",
+            "Generated_Date": "={{ $now }}",
+            "Image_URL": "={{ $('HTTP Request').item.json.results[0].urls.regular }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Platform",
+              "displayName": "Platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Generated_Post",
+              "displayName": "Generated_Post",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Generated_Date",
+              "displayName": "Generated_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Image_URL",
+              "displayName": "Image_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "4f5a8197-b21b-46d8-b951-fd924c31fedc",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleApi": {
+          "id": "1tI1Psn1U1KSAjUI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e3fa3d5d-d1fb-4372-972d-a9cfc76be2a8",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "85ae04a2-68f6-46d9-9b8e-45e880c358c8",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Pending",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "e0427b52-db0b-40c0-a33b-36cf04872656",
+              "leftValue": "={{$json.Approved_Status}}",
+              "rightValue": "Approved",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "9cc980ab-0547-41f0-b363-dd239a83be2f",
+      "name": "Filter"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "ded2788c-c6d2-4548-aac1-18ca98dfafb1",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "sendTo": "shaswathebhuvaneshe2003@gmail.com",
+        "subject": "={{ \"New Content Generated - \" + $('Limit').item.json.Topic }}",
+        "message": "=<h2>🚀 New Social Media Content Generated</h2>\n\n<p><b>Topic:</b> {{ $('Limit').item.json.Topic }}</p>\n\n<p><b>Platform:</b> {{ $('Limit').item.json.Platform }}</p>\n\n<p><b>Status:</b> Completed</p>\n\n<hr>\n\n<h3>Generated Content</h3>\n\n<p>{{ $('Basic LLM Chain').item.json.text }}</p>\n\n<hr>\n\n<h3>Suggested Image</h3>\n\n<img src=\"{{ $('HTTP Request').item.json.results[0].urls.small }}\" width=\"500\">\n\n<br><br>\n\n<a href=\"{{ $('HTTP Request').item.json.results[0].urls.regular }}\">\n📷 Open Full Resolution Image\n</a>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "cd12ad46-66e4-4e1f-97e4-977b8786b240",
+      "name": "Send a message",
+      "webhookId": "3648a4ab-8053-4f10-8a39-8ae0cd238847",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "y3MEBVoLiKdZKBaK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.unsplash.com/search/photos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $('Limit').item.json.Topic }}"
+            },
+            {
+              "name": "per_page",
+              "value": "1"
+            },
+            {
+              "name": "client_id",
+              "value": "FVIne2_ZHiG3rXtKkZncFbH4UDMDv8whQVbQqr3O0fE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "323319b4-5a5c-42a3-b5c8-b1c3d7b28cdd",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "from": "+14155238886",
+        "to": "+918300436007",
+        "toWhatsapp": true,
+        "message": "=🚀 New Content Generated\n\nTopic: {{$('Limit').item.json.Topic}}\n\nPlatform: {{$('Limit').item.json.Platform}}\n\nStatus: Completed\n\nGenerated_Post: {{$('Basic LLM Chain').item.json.text}}\n\nImage:\n{{$('Update row in sheet').item.json.Image_URL}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        0
+      ],
+      "id": "67761bbd-0f1d-439b-bd74-3f9efc865520",
+      "name": "Send an SMS/MMS/WhatsApp message",
+      "credentials": {
+        "twilioApi": {
+          "id": "Cd6oNPZYOENxqGPg",
+          "name": "Twilio account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Send an SMS/MMS/WhatsApp message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an SMS/MMS/WhatsApp message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Kolkata",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "7bdb7855-8284-4452-858a-8b2f31562cc1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "af486545a327b7b1d0aa4f14a038661d28df3547f70af83146728629a1eeaa6d"
+  },
+  "nodeGroups": [],
+  "id": "wxby0Ysbs7II2eXt",
+  "tags": []
+}
